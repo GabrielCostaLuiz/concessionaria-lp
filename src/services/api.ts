@@ -152,71 +152,18 @@ function unwrapCars(data: any): any[] {
 }
 
 export async function getCarById(id: string | number): Promise<Car | undefined> {
-    const data = await safeFetchJson(`/public/cars/${id}`, {
-        next: { revalidate: 3600 }
-    });
-
-    if (!data) return undefined;
-
-    // Handlers para car object embalado ou não
-    const carData = data.data?.id ? data.data : (data.id ? data : undefined);
-
-    if (carData) {
-        return mapCarFromApi(carData);
-    }
-
-    return undefined;
+    return MOCK_CARS.find(c => c.id === String(id));
 }
 
 export async function getFeaturedCars(): Promise<Car[]> {
-    const data = await safeFetchJson(`/public/cars/featured`, {
-        next: { revalidate: 3600 }
-    });
-
-    const cars = unwrapCars(data);
-    
-    // Se a API falhar ou retornar vazio, usamos MOCK_CARS para o site não ficar quebrado
-    if (cars.length === 0) {
-        console.warn('[API] Usando MOCK_CARS para Featured');
-        return MOCK_CARS.filter(c => c.is_featured);
-    }
-
-    return cars.map(mapCarFromApi).filter(Boolean);
+    return MOCK_CARS.filter(c => c.is_featured);
 }
 
-export async function getInventoryCars(filters?: { brand_id?: number | string; category_id?: number | string }): Promise<Car[]> {
-    let endpoint = '/public/cars';
-    const params = new URLSearchParams();
-    if (filters?.brand_id) params.append('brand_id', String(filters.brand_id));
-    if (filters?.category_id) params.append('category_id', String(filters.category_id));
-    
-    if (params.toString()) {
-        endpoint += `?${params.toString()}`;
-    }
-
-    const data = await safeFetchJson(endpoint, {
-        next: { revalidate: 60 }
-    });
-
-    const cars = unwrapCars(data);
-
-    // Rollback para MOCKS se api offline
-    if (cars.length === 0) {
-        console.warn('[API] Usando MOCK_CARS para Inventory');
-        return MOCK_CARS;
-    }
-
-    return cars.map(mapCarFromApi).filter(Boolean);
+export async function getInventoryCars(): Promise<Car[]> {
+    return MOCK_CARS;
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {
-    const data = await safeFetchJson(`/public/testimonials`);
-
-    const result = data?.data || data;
-    if (Array.isArray(result)) {
-        return result;
-    }
-
     return [
         {
             id: '1',
@@ -246,18 +193,6 @@ export async function getTestimonials(): Promise<Testimonial[]> {
 }
 
 export async function getBrands(): Promise<Brand[]> {
-    const data = await safeFetchJson(`/public/brands`);
-
-    if (data && (Array.isArray(data.data) || Array.isArray(data))) {
-        const brandsData = Array.isArray(data.data) ? data.data : data;
-        return brandsData.map((b: any) => ({
-            id: b.id,
-            name: b.name,
-            logo: b.logo || b.image_url || undefined,
-            slug: b.slug
-        }));
-    }
-
     return MOCK_BRANDS;
 }
 

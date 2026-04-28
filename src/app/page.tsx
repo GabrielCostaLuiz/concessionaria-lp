@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturedSection from '@/components/home/FeaturedSection';
 import StatsSection from '@/components/home/StatsSection';
@@ -49,7 +50,9 @@ export default async function Home() {
       <BrandsSection brands={brands} />
       <FeaturedSection cars={featuredCars} />
       <StatsSection />
-      <InventorySection initialCars={inventoryCars} />
+      <Suspense fallback={<div className="h-96 flex items-center justify-center">Carregando estoque...</div>}>
+        <InventorySection initialCars={inventoryCars} />
+      </Suspense>
       <TradeInSection />
       <TestimonialsSection testimonials={testimonials} />
       <LocationSection />
